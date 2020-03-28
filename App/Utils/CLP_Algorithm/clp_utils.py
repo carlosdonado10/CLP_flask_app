@@ -3,6 +3,17 @@ import pandas as pd
 from math import floor
 
 
+def reset_counters():
+    return {
+            'xy': 0,
+            'xz': 0,
+            'yx': 0,
+            'yz': 0,
+            'zx': 0,
+            'zy': 0
+            }
+
+
 def get_container_params(x: float, y: float, z: float):
     return({
         'x1': 0,
@@ -13,10 +24,47 @@ def get_container_params(x: float, y: float, z: float):
         'z2': z
     })
 
+
+def get_box_coords(space, box, counter, ax):
+    x1 = space.x1
+    if ax not in ['yz', 'zy']:
+        x1 += counter[ax]
+    elif ax == 'zy':
+        x1 = 0
+
+    y1 = - box.y
+    y1 += counter['yx'] + space.y2 if ax in ['xy', 'yx'] else 0
+    y1 += space.y2 if ax in ['xz', 'zx'] else 0
+    y1 += space.y2 - counter['yz'] if ax in ['xz', 'zx'] else space.y - counter['yz']
+
+    z1 = space.z1
+    z1 += counter['zx'] if ax in ['xz', 'zx'] else 0
+    z1 += counter['zy'] if ax in ['zy', 'yz'] else 0
+
+    return ({
+        'x1': x1,
+        'y1': y1,
+        'z1': z1,
+        'x2': x1 + box.x,
+        'y2': y1 + box.y,
+        'z2': z1 + box.z,
+        'x': box.x,
+        'y': box.y,
+        'x': box.z,
+        'id': box.id
+    })
+
+
+
 def get_auxiliary_box_params():
     return {
+            'id': 'auxiliary box',
+            'x': 1e9,
+            'y': 1e9,
+            'z': 1e9,
+            'coord_tuple': tuple([0, 1e9, 0, 1e9, 0, 1e9])
+        }
 
-    }
 
 def select_space(space_list: list):
     return max(space_list, key=lambda x: x.y1)
@@ -52,3 +100,8 @@ def calculate_fits(space, bx, ax, num_items):
             'y_axis': ax_dist['y'],
             'z_axis': ax_dist['z']
     }
+
+
+def set_box(box, best_choice, counters):
+    print('a')
+    return('a')

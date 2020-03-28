@@ -1,6 +1,7 @@
 from app.Utils.CLP_Algorithm.classes import Box, Space, AllocatedBox
-from app.Utils.CLP_Algorithm.clp_utils import get_container_params, max_items_left, select_space, calculate_fits
-import pandas as pd
+from app.Utils.CLP_Algorithm.clp_utils import get_container_params, max_items_left, select_space, calculate_fits, \
+    get_auxiliary_box_params, reset_counters, get_box_coords
+import numpy as np
 from itertools import permutations
 from math import floor
 ## Inicializar Algorítmos
@@ -32,6 +33,7 @@ problem_params = [
 ]
 espacios = []
 item_list = []
+allocated_list = []
 
 container_params = get_container_params(233, 587, 220)
 container = Space('container', **container_params)
@@ -51,22 +53,34 @@ while max_items_left(item_list) > 0 and len(espacios):
     selected_space = select_space(espacios)
     allocated_volume = 0
 
-    for idx, i in enumerate(item_list):
+    for idx, itm in enumerate(item_list):
         results = {}
-        if len(i) > 0:
+        if len(itm) > 0:
             dimensions = ['x', 'y', 'z']
             for ax in list(permutations(dimensions, 2)):
                 missing_axis = ''.join(set(dimensions) - set(ax))
-                results.update({''.join(ax): calculate_fits(selected_space, i[0], ax, len(i))})
+                results.update({''.join(ax): calculate_fits(selected_space, itm[0], ax, len(itm))})
 
         mejorFit = 1e9
         mayor_cantidad = 0
         for key in results.keys():
             if results[key]['fit'] < mejorFit and results[key]['max_items'] >= mayor_cantidad:
                 best_choice = results[key]
+                best_choice.update({'chosen_ax': key})
+                mayor_cantidad = results[key]['max_items']
 
-        if mayor_cantidad * i[0].volume > allocated_volume:
+        if mayor_cantidad * itm[0].volume > allocated_volume:
             tipo_elegido = idx
-            allocated_volume = mayor_cantidad * i[0].volume
+            allocated_volume = mayor_cantidad * itm[0].volume
 
-    auxiliary_container = AllocatedBox()
+    auxiliary_params = get_auxiliary_box_params()
+    auxiliary_container = AllocatedBox(**auxiliary_params)
+    counters = reset_counters()
+
+    for idx, bx in enumerate(item_list[tipo_elegido]):
+        if idx <= best_choice['max_items']:
+            al_params = get_box_coords(selected_space, item_list[tipo_elegido][idx], counters, best_choice['chosen_ax'])
+            al_bx = AllocatedBox(**al_params)
+            allocated_list.append(al_bx)
+            item_list[tipo_elegido].pop(idx)
+

@@ -19,22 +19,27 @@ class Box(object):
 
 class AllocatedBox(Box):
     def __init__(self, **kwargs):
-        self.x1 = kwargs.get('x1'),
         self.x2 = kwargs.get('x2'),
         self.y1 = kwargs.get('y1'),
         self.y2 = kwargs.get('y2'),
+        self.x1 = kwargs.get('x1'),
         self.z1 = kwargs.get('z1'),
         self.z2 = kwargs.get('z2'),
         Box.__init__(self, **kwargs)
 
+    def is_in_space(self, space):
+        return not space.x1 >= self.x2[0] or space.x2 <= self.x1[0] or space.y1 >= self.y2[0] or space.y2 <= self.y1[0] or \
+               space.z1 >= self.z2[0] or space.z2 <= self.z1[0]
+
 
 class Space(object):
-    def __init__(self, item_id, **kwargs):
-        self.id = item_id
+    def __init__(self, item_id="", **kwargs):
+        self.id = item_id if len(item_id) > 0 else kwargs.get('id')
         self.x1, self.x2, self.y1, self.y2, self.z1, self.z2 = tuple((kwargs.get('x1'), kwargs.get('x2'), kwargs.get('y1'), kwargs.get('y2'), kwargs.get('z1'), kwargs.get('z2')))
         self.x = abs(self.x1-self.x2)
         self.y = abs(self.y1-self.y2)
         self.z = abs(self.z1-self.z2)
+        self.volume = self.x*self.y*self.z
         self.params = {
             'x': self.x,
             'y': self.y,
@@ -43,3 +48,10 @@ class Space(object):
 
     def __repr__(self):
         return f"""space : {self.id}"""
+
+    def a_box_fits(self, item_list):
+        for itms in item_list:
+            if len(itms) > 0:
+                if itms[0].x <= self.x and itms[0].y <= self.y and itms[0].z <= self.z:
+                    return True
+        return False

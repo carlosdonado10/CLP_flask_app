@@ -1,6 +1,6 @@
 from app.Utils.CLP_Algorithm.classes import Box, Space, AllocatedBox
 from app.Utils.CLP_Algorithm.clp_utils import get_container_params, max_items_left, select_space, calculate_fits, \
-    get_auxiliary_box_params, reset_counters, get_box_coords
+    get_auxiliary_box_params, reset_counters, get_box_coords, update_spaces
 import numpy as np
 from itertools import permutations
 from math import floor
@@ -31,15 +31,15 @@ problem_params = [
         'z': 20
     }
 ]
-espacios = []
+space_list = []
 item_list = []
 allocated_list = []
 
 container_params = get_container_params(233, 587, 220)
 container = Space('container', **container_params)
 
-espacios.append(container)
-
+space_list.append(container)
+auxiliary_container = None
 id_ = 0
 for i in problem_params:
     lista = []
@@ -49,38 +49,123 @@ for i in problem_params:
         lista.append(Box(**i))
     item_list.append(lista)
 
-while max_items_left(item_list) > 0 and len(espacios):
-    selected_space = select_space(espacios)
+num_iter = 0
+while max_items_left(item_list) > 0 and len(space_list) > 0:
+    num_iter += 1
+    selected_space = select_space(space_list)
     allocated_volume = 0
 
     for idx, itm in enumerate(item_list):
         results = {}
-        if len(itm) > 0:
-            dimensions = ['x', 'y', 'z']
-            for ax in list(permutations(dimensions, 2)):
-                missing_axis = ''.join(set(dimensions) - set(ax))
-                results.update({''.join(ax): calculate_fits(selected_space, itm[0], ax, len(itm))})
+        if len(itm) == 0:
+            continue
+
+        dimensions = ['x', 'y', 'z']
+        for ax in list(permutations(dimensions, 2)):
+            missing_axis = ''.join(set(dimensions) - set(ax))
+            results.update({''.join(ax): calculate_fits(selected_space, itm[0], ax, len(itm))})
 
         mejorFit = 1e9
         mayor_cantidad = 0
         for key in results.keys():
             if results[key]['fit'] < mejorFit and results[key]['max_items'] >= mayor_cantidad:
-                best_choice = results[key]
-                best_choice.update({'chosen_ax': key})
+                best_choice_local = results[key]
+                best_choice_local.update({'chosen_ax': key})
+                mayor_cantidad = results[key]['max_items']
+                mejorFit = results[key]['fit']
                 mayor_cantidad = results[key]['max_items']
 
         if mayor_cantidad * itm[0].volume > allocated_volume:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            best_choice = best_choice_local
             tipo_elegido = idx
             allocated_volume = mayor_cantidad * itm[0].volume
 
-    auxiliary_params = get_auxiliary_box_params()
-    auxiliary_container = AllocatedBox(**auxiliary_params)
     counters = reset_counters()
-
+    temp_allocated_list = []
+    remove_boxes = []
+    ax = ''.join(best_choice['chosen_ax'])
     for idx, bx in enumerate(item_list[tipo_elegido]):
-        if idx <= best_choice['max_items']:
-            al_params = get_box_coords(selected_space, item_list[tipo_elegido][idx], counters, best_choice['chosen_ax'])
-            al_bx = AllocatedBox(**al_params)
-            allocated_list.append(al_bx)
-            item_list[tipo_elegido].pop(idx)
+        if idx >= best_choice['max_items']:
+            break
+        al_params = get_box_coords(selected_space, item_list[tipo_elegido][idx], counters, ax)
+        al_bx = AllocatedBox(**al_params)
+        allocated_list.append(al_bx)
+        temp_allocated_list.append(al_bx)
+        remove_boxes.append(bx)
+
+        if (idx + 1) % best_choice['ax_dist'][ax[:1]] == 0:
+            counters[ax][ax[-1:]] += bx.params.get(ax[1:])
+            counters[ax][ax[:1]] = 0
+        else:
+            counters[ax][ax[:1]] += bx.params.get(ax[:-1])
+
+    print(f"Iteration: {num_iter} \nmax items: {best_choice['max_items']}\ntipo_elegido: {tipo_elegido}")
+    item_list[tipo_elegido] = list(set(item_list[tipo_elegido]) - set(remove_boxes))
+    auxiliary_params = get_auxiliary_box_params(temp_allocated_list, None)
+    auxiliary_container = AllocatedBox(**auxiliary_params)  # TODO: Mover a cuando tenga los atributos listos
+    allocated_list.append(auxiliary_container)
+
+    space_list = update_spaces(space_list, auxiliary_container, item_list)
+
+print(f"Total Utilization: {sum(map(lambda x: x.volume, allocated_list))/container.volume}")
+
+# TODO: El volumen metido supera el volumen del contenedor
 

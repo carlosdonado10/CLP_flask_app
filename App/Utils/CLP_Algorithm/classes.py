@@ -28,8 +28,8 @@ class AllocatedBox(Box):
         Box.__init__(self, **kwargs)
 
     def is_in_space(self, space):
-        return not space.x1 >= self.x2[0] or space.x2 <= self.x1[0] or space.y1 >= self.y2[0] or space.y2 <= self.y1[0] or \
-               space.z1 >= self.z2[0] or space.z2 <= self.z1[0]
+        return not (space.x1 >= self.x2[0] or space.x2 <= self.x1[0] or space.y1 >= self.y2[0] or space.y2 <= self.y1[0] or \
+               space.z1 >= self.z2[0] or space.z2 <= self.z1[0])
 
 
 class Space(object):
@@ -52,6 +52,6 @@ class Space(object):
     def a_box_fits(self, item_list):
         for itms in item_list:
             if len(itms) > 0:
-                if itms[0].x <= self.x and itms[0].y <= self.y and itms[0].z <= self.z:
+                if (itms[0].x <= self.x and itms[0].y <= self.y and itms[0].z <= self.z):
                     return True
         return False

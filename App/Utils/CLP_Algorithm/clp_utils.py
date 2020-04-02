@@ -111,7 +111,7 @@ def calculate_fits(space, bx, ax, num_items):
     max_items_in_axis = ax_dist[ax[0]] * ax_dist[ax[1]]
 
     fit = depth_fit + height_fit + length_fit \
-        if min([depth_fit, height_fit, length_fit]) > 0 and max_items_in_axis > 0 else 99999999
+        if min([depth_fit, height_fit, length_fit]) >= 0 and max_items_in_axis > 0 else 1e9
 
 
     return {
@@ -122,11 +122,11 @@ def calculate_fits(space, bx, ax, num_items):
 
 
 # TODO: Esta función está horrible
-def generate_spaces(space, auxiliary_box):
+def generate_spaces(space, auxiliary_box, num_iter):
     space_list = []
     params = {}
     if auxiliary_box.y1[0] >= space.y1:
-        params.update({'id': 'a'})
+        params.update({'id': f'{num_iter}a'})
         params.update({'x1': space.x1})
         params.update({'x2': space.x2})
         params.update({'y1': space.y1})
@@ -137,10 +137,10 @@ def generate_spaces(space, auxiliary_box):
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
 
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     if auxiliary_box.x2[0] <= space.x2:
-        params.update({'id': 'b'})
+        params.update({'id': f'{num_iter}b'})
         params.update({'x1': auxiliary_box.x2[0]})
         params.update({'x2': space.x2})
         params.update({'y1': space.y1})
@@ -151,10 +151,10 @@ def generate_spaces(space, auxiliary_box):
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
 
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     if auxiliary_box.z2[0] <= space.z2:
-        params.update({'id': 'c'})
+        params.update({'id': f'{num_iter}c'})
         params.update({'x1': auxiliary_box.x1[0]})
         params.update({'x2': auxiliary_box.x2[0]})
         params.update({'y1': auxiliary_box.y1[0]})
@@ -165,10 +165,10 @@ def generate_spaces(space, auxiliary_box):
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
 
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     if auxiliary_box.y2[0] <= space.y2:
-        params.update({'id': 'd'})
+        params.update({'id': f'{num_iter}d'})
         params.update({'x1': space.x1})
         params.update({'x2': space.x2})
         params.update({'y1': auxiliary_box.y2[0]})
@@ -179,10 +179,10 @@ def generate_spaces(space, auxiliary_box):
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
 
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     if auxiliary_box.x1[0] >= space.x1:
-        params.update({'id': 'e'})
+        params.update({'id': f'{num_iter}e'})
         params.update({'x1': space.x1})
         params.update({'x2': auxiliary_box.x1[0]})
         params.update({'y1': space.y2})
@@ -192,11 +192,10 @@ def generate_spaces(space, auxiliary_box):
         params.update({'x': abs(params['x2'] - params['x1'])})
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
-
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     if auxiliary_box.z1[0] >= space.z1:
-        params.update({'id': 'f'})
+        params.update({'id': f'{num_iter}f'})
         params.update({'x1': auxiliary_box.x1[0]})
         params.update({'x2': auxiliary_box.x2[0]})
         params.update({'y1': auxiliary_box.y1[0]})
@@ -207,23 +206,26 @@ def generate_spaces(space, auxiliary_box):
         params.update({'y': abs(params['y2'] - params['y1'])})
         params.update({'z': abs(params['z2'] - params['z1'])})
 
-    space_list.append(Space(**params))
+        space_list.append(Space(**params))
 
     return space_list
 
 
-def update_spaces(space_list, auxiliary_box, item_list):
-
-    for idx, sp in enumerate(space_list.copy()):
+def update_spaces(space_list, auxiliary_box, item_list, num_iter):
+    pop_list = []
+    space_list_copy = space_list.copy()
+    for idx, sp in enumerate(space_list_copy):
         if auxiliary_box.is_in_space(sp):
-            sp_list = generate_spaces(sp, auxiliary_box)
+            sp_list = generate_spaces(sp, auxiliary_box, num_iter)
             for new_space in sp_list:
                 if new_space.a_box_fits(item_list):
                     space_list.append(new_space)
-            space_list.pop(idx)
-
-        elif sp.a_box_fits(item_list):
-            space_list.pop(idx)
-    return space_list
+            pop_list.append(idx)
 
 
+        elif not sp.a_box_fits(item_list):
+            pop_list.append(idx)
+
+        print(idx)
+    sp_list = [sp for idx, sp in enumerate(space_list) if idx not in pop_list]
+    return sp_list

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+<!-- TODO: ADD CONTAINER IMAGE!-->
+{% block content %}
+    <h1> Container Dimensions </h1><br>
+    <form action ="" method = "post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{form.containerX.label}}<br>
+            {{ form.containerX(size=32) }}
+            <span style="color: red;">{{ ''.join(form.containerX.errors) }}</span>
+        </p>
+        <p>
+            {{form.containerY.label}}<br>
+            {{ form.containerY(size=32) }}
+            <span style="color: red;">{{ ''.join(form.containerY.errors) }}</span>
+        </p>
+        <p>
+            {{form.containerZ.label}}<br>
+            {{ form.containerZ(size=32) }}
+            <span style="color: red;">{{ ''.join(form.containerZ.errors) }}</span>
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

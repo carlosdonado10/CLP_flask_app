@@ -5,6 +5,8 @@ import numpy as np
 from itertools import permutations
 from math import floor
 ## Inicializar Algorítmos
+
+#TODO: Enviar cosas a clp_utils y convertir en una clase
 problem_params = [
     {
         'num_items': 100,
@@ -101,7 +103,7 @@ while max_items_left(item_list) > 0 and len(space_list) > 0:
     print(f"Iteration: {num_iter} \nmax items: {best_choice['max_items']}\ntipo_elegido: {tipo_elegido}\nEspacio: {selected_space}")
     item_list[tipo_elegido] = list(set(item_list[tipo_elegido]) - set(remove_boxes))
     auxiliary_params = get_auxiliary_box_params(temp_allocated_list, None)
-    auxiliary_container = AllocatedBox(**auxiliary_params)  # TODO: Mover a cuando tenga los atributos listos
+    auxiliary_container = AllocatedBox(**auxiliary_params)
     allocated_list.append(auxiliary_container)
 
     space_list = update_spaces(space_list, auxiliary_container, item_list, num_iter)
@@ -109,5 +111,4 @@ while max_items_left(item_list) > 0 and len(space_list) > 0:
     print('iter done')
 print(f"Total Utilization: {sum(map(lambda x: x.volume if x.id != 'auxiliary box' else 0, allocated_list[:-1]))/container.volume}")
 
-# TODO: El volumen metido supera el volumen del contenedor
 

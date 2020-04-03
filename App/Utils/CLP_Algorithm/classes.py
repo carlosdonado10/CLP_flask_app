@@ -1,4 +1,5 @@
-
+# TODO: Incluir visualizaciones en las clases
+# TODO: Crear clases para las listas ¿que contienen métodos de visualización?
 class Box(object):
     def __init__(self, **kwargs):
         self.id = kwargs.get('id')

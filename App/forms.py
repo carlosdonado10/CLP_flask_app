@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, FloatField, SubmitField, IntegerField, SelectField, PasswordField, FieldList, FormField
-from wtforms.validators import InputRequired, ValidationError, Email, DataRequired
-
+from wtforms.validators import InputRequired, ValidationError, Email, DataRequired, EqualTo
+from app.models import User
 
 def validate_dimensions(form, field):
     if field.data is None:
@@ -35,6 +35,26 @@ class boxesParams(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email: ', validators=[DataRequired(), Email()])
+    username = StringField('username', validators=[DataRequired()])
     password = PasswordField('Password: ', validators=[DataRequired()])
     submit = SubmitField('Sign In')
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField(
+        'Repeat Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
+
+    # TODO: Validate password conditions (has number etc.)

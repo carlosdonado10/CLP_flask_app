@@ -1,5 +1,7 @@
+werkzeug
 Flask==1.1.1
 pandas==1.0.3
 WTForms==2.2.1
 Flask-SQLAlchemy==2.4.1
-
+Flask-Login==0.5.0
+Flask-Bootstrap==3.3.7.1

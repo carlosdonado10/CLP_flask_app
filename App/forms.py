@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FloatField, SubmitField, IntegerField, SelectField, PasswordField
+from wtforms import StringField, FloatField, SubmitField, IntegerField, SelectField, PasswordField, FieldList, FormField
 from wtforms.validators import InputRequired, ValidationError, Email, DataRequired
 
 
@@ -21,13 +21,16 @@ class ContainerParams(FlaskForm):
     submit = SubmitField()
 
 
-class boxesParams(FlaskForm):
-    num_types = SelectField('Types of boxes to use', choices=[('1', 1), ('2', 2), ('3', 3), ('4', 4), ('5', 5),
-                                                              ('6', 6), ('7', 7), ('8', 8), ('9', 9), ('10', 10)])
+class SingleBox(FlaskForm):
     boxX = FloatField("Box Width")
     boxY = FloatField("Box Depth")
     boxZ = FloatField("Box Height")
     num_boxes = IntegerField("Number of Boxes")
+
+
+class boxesParams(FlaskForm):
+    boxes = FieldList(FormField(SingleBox), min_entries=2)
+    add_box = SubmitField(label='Add Box')
     submit = SubmitField()
 
 

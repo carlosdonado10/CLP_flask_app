@@ -4,65 +4,35 @@
     <h1> Container Dimensions </h1><br>
     <form action ="" method = "POST" novalidate>
         {{ form.hidden_tag() }}
+
         <p>
-            {{ form.num_types.label }}
-            {{form.num_types}}<br>
-            <span style="color: red;">{{ ''.join(form.num_types.errors) }}</span>
+            {{form.num_items}}
+            {{ form.add_box }}
+
         </p>
+        <div id = "paramTable">
+            <table style="width:40%">
+                <tr>
+                    <th>Box Width (x)</th>
+                    <th>Box Depth (y)</th>
+                    <th>Box Height (z)</th>
+                    <th>Number of Boxes</th>
+                </tr>
 
 
-                <div id = "paramTable">
-                <table style="width:40%">
-                    <tr>
-                        <th> Box id </th>
-                        <th>{{ form.boxX.label }}</th>
-                        <th>{{ form.boxY.label }}</th>
-                        <th>{{ form.boxZ.label }}</th>
-                        <th>{{ form.num_boxes.label }}</th>
-                    </tr>
-                    <tr>
-                        <th>1</th>
-                        <th>{{ form.boxX }}</th>
-                        <th>{{ form.boxY }}</th>
-                        <th>{{ form.boxZ }}</th>
-                        <th>{{ form.num_boxes }}</th>
-                    </tr>
-                </table>
-            </div>
+                {% for bx in form.boxes %}
+                <tr>
+                    {% for fld in bx %}
+                    <th>{{ fld }}</th>
+                    {% endfor %}
 
+                </tr>
+                {% endfor %}
+            </table>
 
-        <script>
-            let num_types = document.getElementById('num_types');
-            let table = document.getElementById('paramTable');
-
-            num_types.onchange = function(){
-                num = num_types.value;
-                let optionHTML = '<div id = "paramTable">' +
-                                    '<table style="width:40%">' +
-                                        '<tr>'+
-                                            '<th> Box id </th>'+
-                                            '<th>{{ form.boxX.label }}</th>' +
-                                            '<th>{{ form.boxY.label }}</th>' +
-                                            '<th>{{ form.boxZ.label }}</th>' +
-                                            '<th>{{ form.num_boxes.label }}</th>' +
-                                        '</tr>';
-
-                for(let i=0; i<num; i++){
-                    optionHTML+= '<tr>'+
-                            '<th>' + i + '</th>' +
-                        '<th><input id="boxX-' + i + '" name = "boxX-' + i+'" type="text" value="""></th>' +
-                         '<th><input id="boxY-' + i + '" name = "boxY-' + i+'" type="text" value="""></th>' +
-                        '<th><input id="boxZ-' + i + '" name = "boxZ-' + i+'" type="text" value="""></th>' +
-                        '<th><input id="num_boxes-' + i + '" name = "num_boxes-' + i+'" type="text" value="""></th>' +
-                            '</tr>';
-                }
-
-                optionHTML += '</table></div>';
-                table.innerHTML = optionHTML;
-            }
-
-        </script>
+        </div>
 
         <p>{{ form.submit() }}</p>
     </form>
+
 {% endblock %}

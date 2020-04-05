@@ -3,6 +3,7 @@ from app.forms import ContainerParams, boxesParams, LoginForm, RegistrationForm
 from app.Utils.CLP_Algorithm.volume_maximization import volume_maximization
 from app.Utils.utils import params
 from flask_login import current_user, login_user, logout_user, login_required
+from json import loads, dumps
 from werkzeug.urls import url_parse
 from app.models import User
 from app import app, db
@@ -65,16 +66,21 @@ def boxes(containerX, containerY, containerZ):
             boxes_params.append(box_params)
 
 
-        return redirect(url_for('results', container_params=container_params, boxes_params=boxes_params))
+        return redirect(url_for('results', container_params=dumps(container_params), boxes_params=dumps(boxes_params)))
 
     return render_template('boxes.html', form=form)
 
 
 @app.route('/results/<container_params>/<boxes_params>')
 def results(container_params, boxes_params):
-    all_list, utilization = volume_maximization(problem_params=boxes_params, container_params=container_params)
+
+    allocated_list, utilization, container = volume_maximization(problem_params=loads(boxes_params),
+                                                                 container_params=loads(container_params))
     flash(utilization)
-    return render_template('results.html')
+
+    return render_template('results.html', allocated_list=allocated_list, utilization=utilization, container=container)
+
+
 
 
 # TODO: Change orientations?

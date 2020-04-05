@@ -1,8 +1,10 @@
+from json import dumps
 # TODO: Incluir visualizaciones en las clases
 # TODO: Crear clases para las listas ¿que contienen métodos de visualización?
 class Box(object):
     def __init__(self, **kwargs):
         self.id = kwargs.get('id')
+        self.type = kwargs.get('type')
         self.x = kwargs.get('x')
         self.y = kwargs.get('y')
         self.z = kwargs.get('z')
@@ -32,6 +34,15 @@ class AllocatedBox(Box):
         return not (space.x1 >= self.x2[0] or space.x2 <= self.x1[0] or space.y1 >= self.y2[0] or space.y2 <= self.y1[0] or \
                space.z1 >= self.z2[0] or space.z2 <= self.z1[0])
 
+    def __repr__(self):
+        return dumps({
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+            "x1": self.x1[0],
+            "y1": self.y1[0],
+            "z1": self.z1[0]
+        })
 
 class Space(object):
     def __init__(self, item_id="", **kwargs):
@@ -48,7 +59,7 @@ class Space(object):
         }
 
     def __repr__(self):
-        return f"""space : {self.id}"""
+        return f"""space:{self.id}"""
 
     def a_box_fits(self, item_list):
         for itms in item_list:

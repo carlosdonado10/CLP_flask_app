@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block app_content %}
+<body>
+
+<form style="float:right">
+    <label> Container Utilization: {{ utilization }}</label><br>
+    <label> Total Boxes Requested: {{total_boxes}}</label><br>
+    <label> Total Allocated Boxes: {{allocated_list|length}}</label><br>
+
+
+</form>
+
+<script src="http://threejs.org/build/three.min.js"></script>
+<script type="text/javascript" src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script>
+
+
+    init();
+    plot_boxes();
+    render();
+
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color( 0xffffff );
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        var geometry = new THREE.BoxGeometry({{ container.x }}, {{ container.y }}, {{ container.z}});
+        var material = new THREE.MeshBasicMaterial({color: 0x9b9b9b });
+        material.transparent = true;
+        material.opacity = 0;
+        cube = new THREE.Mesh(geometry, material);
+        //scene.add(cube);
+        cube.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+        //Esta posicion es el centro
+
+        edges = new THREE.EdgesHelper(cube, 0x0000);
+        edges.material.linewidth = 2;
+        scene.add(edges);
+        edges.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+
+        camera.position.z = Math.max({{container.x}}, {{ container.y }}, {{ container.z}})*3;
+        controls = new THREE.OrbitControls(camera, renderer.domElement)
+        controls.update();
+
+    };
+
+    function plot_boxes(){
+
+            var colors = {
+        0: 0xe14c14,
+        1: 0x71e114,
+        2: 0x1439e1,
+        3: 0xd7e114,
+        4: 0xe114e1,
+        5: 0x14d7e1
+    };
+        {% for box in allocated_list %}
+        var geometry = new THREE.BoxGeometry({{ box.x }}, {{ box.y }}, {{ box.z}});
+        var material = new THREE.MeshBasicMaterial({color: colors[{{box.type}}]});
+        material.transparent = true;
+        material.opacity = 0.5;
+        cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        cube.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
+
+        edges = new THREE.EdgesHelper(cube, 0x0000);
+        edges.material.linewidth = 5;
+        scene.add(edges);
+        //edges.position.set({{box.x1[0]}}, {{box.y1[0]}}, {{box.z1[0]}});
+        edges.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
+
+        {% endfor %}
+    };
+
+    function render() {
+        requestAnimationFrame(render);
+        /*cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        edges.rotation.x += 0.01;
+        edges.rotation.y += 0.01;*/
+        controls.update();
+        renderer.render(scene, camera);
+    };
+
+
+
+</script>
+</body>
+
+{% endblock %}

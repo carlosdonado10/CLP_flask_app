@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+<!-- TODO: ADD CONTAINER IMAGE!-->
+{% block app_content %}
+        <h1> Box Parameters </h1><br>
+    <form action ="" method = "POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{form.num_items}}
+            {{ form.add_box }}
+
+        </p>
+        <div id = "paramTable">
+            <table style="width:40%">
+                <tr>
+                    <th>Box Width (x)</th>
+                    <th>Box Depth (y)</th>
+                    <th>Box Height (z)</th>
+                    <th>Number of Boxes</th>
+                </tr>
+
+
+                {% for bx in form.boxes %}
+                <tr>
+                    {% for fld in bx %}
+                    <th>{{ fld }}</th>
+                    {% endfor %}
+
+                </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+
+        <p>{{ form.submit() }} </p>
+        <p>{{ form.favorites() }} {{ form.fav_name }}</p>
+    </form>
+
+{% endblock %}

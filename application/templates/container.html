@@ -3,6 +3,10 @@
 
 {% block app_content %}
     <h1>Container Dimensions</h1>
+    <select id="paramtype" name="holaa">
+        <option value="load"> Load from saved items</option>
+        <option value="generate">Create container schema</option>
+    </select>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}

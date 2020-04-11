@@ -229,3 +229,9 @@ def update_spaces(space_list, auxiliary_box, item_list, num_iter):
         print(idx)
     sp_list = [sp for idx, sp in enumerate(space_list) if idx not in pop_list]
     return sp_list
+
+def allocated_by_type(allocated_list):
+    alloc = {}
+    for bx in allocated_list:
+        alloc[bx.type]+=1
+    return alloc

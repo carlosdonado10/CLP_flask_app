@@ -108,7 +108,7 @@ def results(container_params, boxes_params):
     total_boxes = 400
 
     return render_template('results.html', allocated_list=allocated_list, utilization=utilization, container=container,
-                           total_boxes=total_boxes)
+                           total_boxes=total_boxes, boxes_params=boxes_params)
 
 
 

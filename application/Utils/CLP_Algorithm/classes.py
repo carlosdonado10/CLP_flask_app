@@ -11,6 +11,7 @@ class Box(object):
         self.volume = self.x*self.y*self.z
         self.params = {
             'id': kwargs.get('id'),
+            'type': kwargs.get('type'),
             'x': kwargs.get('x'),
             'y': kwargs.get('y'),
             'z': kwargs.get('z')
@@ -28,6 +29,7 @@ class AllocatedBox(Box):
         self.x1 = kwargs.get('x1'),
         self.z1 = kwargs.get('z1'),
         self.z2 = kwargs.get('z2'),
+        self.iteration = kwargs.get('num_iter')
         Box.__init__(self, **kwargs)
 
     def is_in_space(self, space):
@@ -36,12 +38,14 @@ class AllocatedBox(Box):
 
     def __repr__(self):
         return dumps({
+            "type": self.type,
             "x": self.x,
             "y": self.y,
             "z": self.z,
             "x1": self.x1[0],
             "y1": self.y1[0],
-            "z1": self.z1[0]
+            "z1": self.z1[0],
+            'iteration': self.iteration
         })
 
 class Space(object):

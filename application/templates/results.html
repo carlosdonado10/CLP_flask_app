@@ -2,92 +2,134 @@
 {% block app_content %}
 <body>
 
-<form style="float:right">
-    <label> Container Utilization: {{ utilization }}</label><br>
-    <label> Total Boxes Requested: {{total_boxes}}</label><br>
-    <label> Total Allocated Boxes: {{allocated_list|length}}</label><br>
+<div id="visualizacion" class="col-md-8"></div>
+<div class="row" style="margin-top:10px">
+    <div class="col-md-4">
+        <form style="float:right;margin-top:10px;border:solid;border-radius: 10px">
+            <label> Container Utilization: {{ utilization }}</label><br>
+            <label> Total Boxes Requested: {{total_boxes}}</label><br>
+            <label> Total Allocated Boxes: {{allocated_list|length}}</label><br>
+            <div>
+              <input type="range" id="iteration" name="iteration" min="0" max="4" value="4" step="1">
+            </div>
+        </form>
 
 
-</form>
+        <table id="allocated_table"></table>
+    </div>
+</div>
 
-<script src="http://threejs.org/build/three.min.js"></script>
-<script type="text/javascript" src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
-<script>
+    <script src="http://threejs.org/build/three.min.js"></script>
+    <script type="text/javascript" src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        init();
+        init_params();
+        plot_boxes();
+        document.getElementById("iteration").onchange = function(){
+            let iter = document.getElementById("iteration").value;
+            alert(iter);
+        }
+        render();
+
+        function init_params(){
+            var allocated = {};
+            var requested = {};
+            let i = 0;
+            {% for box in allocated_list %}
+                allocated[{{box.type}}]+=1;
+            {% endfor %}
+
+            optionHTML = "                <table id='allocated_table'> <tr>\n" +
+                "                    <th>Box type</th>\n" +
+                "                    <th>Allocated_boxes</th>\n" +
+                "                    <th>color</th>\n" +
+                "                </tr>";
+            for(let i=0; i<allocated.length;i++){
+                optionHTML+="<tr><th>" + i + "</th>" +
+                        "<th>" + allocated[i] + "</th>" +
+                        "<th>" + colors[i] + "</th></tr>";
+
+            }
+            optionHTML+="</table>"
+            document.getElementById('allocated_table').innerHTML=optionHTML;
+        }
 
 
-    init();
-    plot_boxes();
-    render();
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0xffffff );
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth*0.6, window.innerHeight*0.6);
+            document.getElementById("visualizacion").appendChild(renderer.domElement);
+            var geometry = new THREE.BoxGeometry({{ container.x }}, {{ container.y }}, {{ container.z}});
+            var material = new THREE.MeshBasicMaterial({color: 0x9b9b9b });
+            material.transparent = true;
+            material.opacity = 0;
+            cube = new THREE.Mesh(geometry, material);
+            //scene.add(cube);
+            cube.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+            //Esta posicion es el centro
 
+            edges = new THREE.EdgesHelper(cube, 0x0000);
+            edges.material.linewidth = 2;
+            scene.add(edges);
+            edges.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
 
-    function init() {
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color( 0xffffff );
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-        renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-        var geometry = new THREE.BoxGeometry({{ container.x }}, {{ container.y }}, {{ container.z}});
-        var material = new THREE.MeshBasicMaterial({color: 0x9b9b9b });
-        material.transparent = true;
-        material.opacity = 0;
-        cube = new THREE.Mesh(geometry, material);
-        //scene.add(cube);
-        cube.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
-        //Esta posicion es el centro
+            camera.position.z = Math.max({{container.x}}, {{ container.y }}, {{ container.z}})*3;
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.update();
 
-        edges = new THREE.EdgesHelper(cube, 0x0000);
-        edges.material.linewidth = 2;
-        scene.add(edges);
-        edges.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+        };
 
-        camera.position.z = Math.max({{container.x}}, {{ container.y }}, {{ container.z}})*3;
-        controls = new THREE.OrbitControls(camera, renderer.domElement)
-        controls.update();
-
-    };
-
-    function plot_boxes(){
+        function plot_boxes(){
 
             var colors = {
-        0: 0xe14c14,
-        1: 0x71e114,
-        2: 0x1439e1,
-        3: 0xd7e114,
-        4: 0xe114e1,
-        5: 0x14d7e1
-    };
-        {% for box in allocated_list %}
-        var geometry = new THREE.BoxGeometry({{ box.x }}, {{ box.y }}, {{ box.z}});
-        var material = new THREE.MeshBasicMaterial({color: colors[{{box.type}}]});
-        material.transparent = true;
-        material.opacity = 0.5;
-        cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-        cube.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
+                0: 0xe14c14,
+                1: 0x71e114,
+                2: 0x1439e1,
+                3: 0xd7e114,
+                4: 0xe114e1,
+                5: 0x14d7e1
+            };
+            {% for box in allocated_list %}
+            var geometry = new THREE.BoxGeometry({{ box.x }}, {{ box.y }}, {{ box.z}});
 
-        edges = new THREE.EdgesHelper(cube, 0x0000);
-        edges.material.linewidth = 5;
-        scene.add(edges);
-        //edges.position.set({{box.x1[0]}}, {{box.y1[0]}}, {{box.z1[0]}});
-        edges.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
 
-        {% endfor %}
-    };
+                var material = new THREE.MeshBasicMaterial({color: colors[{{box.type}}]});
+            material.transparent = true;
 
-    function render() {
-        requestAnimationFrame(render);
-        /*cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        edges.rotation.x += 0.01;
-        edges.rotation.y += 0.01;*/
-        controls.update();
-        renderer.render(scene, camera);
-    };
+            material.opacity = 0.5;
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            cube.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
+
+            edges = new THREE.EdgesHelper(cube, 0x0000);
+            edges.material.linewidth = 5;
+            scene.add(edges);
+            //edges.position.set({{box.x1[0]}}, {{box.y1[0]}}, {{box.z1[0]}});
+            edges.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
+
+            {% endfor %}
+        };
 
 
 
-</script>
+        function render() {
+            requestAnimationFrame(render);
+            /*cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            edges.rotation.x += 0.01;
+            edges.rotation.y += 0.01;*/
+            controls.update();
+            renderer.render(scene, camera);
+        };
+
+
+
+    </script>
+
+
 </body>
 
 {% endblock %}

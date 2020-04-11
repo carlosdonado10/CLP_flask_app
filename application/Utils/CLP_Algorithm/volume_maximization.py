@@ -2,7 +2,7 @@ from itertools import permutations
 
 from application.Utils.CLP_Algorithm.classes import Box, Space, AllocatedBox
 from application.Utils.CLP_Algorithm.clp_utils import get_container_params, max_items_left, select_space, calculate_fits, \
-    get_auxiliary_box_params, reset_counters, get_box_coords, update_spaces
+    get_auxiliary_box_params, reset_counters, get_box_coords, update_spaces, allocated_by_type
 
 #TODO: Enviar cosas a clp_utils y convertir en una clase
 
@@ -90,7 +90,8 @@ def volume_maximization(problem_params, container_params):
             if idx >= best_choice['max_items']:
                 break
             al_params = get_box_coords(selected_space, item_list[tipo_elegido][idx], counters, ax)
-            al_params.update({'type': bx.type})
+            al_params.update({'type': bx.type,
+                              'num_iter': num_iter})
             al_bx = AllocatedBox(**al_params)
             allocated_list.append(al_bx)
             temp_allocated_list.append(al_bx)
@@ -121,4 +122,6 @@ def volume_maximization(problem_params, container_params):
 
     return allocated_list, utilization, container
 
-# volume_maximization(problem_params, container_params)
+# al,_,_=volume_maximization(problem_params, container_params)
+
+# allocated_by_type(al)

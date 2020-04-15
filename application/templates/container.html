@@ -3,13 +3,61 @@
 
 {% block app_content %}
     <h1>Container Dimensions</h1>
+<form method="post" id="select_type">
+    <label for="paramtype">Load or Generate Dispatch?</label>
     <select id="paramtype" name="holaa">
+         <option disabled selected value> -- select an option -- </option>
         <option value="load"> Load from saved items</option>
-        <option value="generate">Create container schema</option>
+        <option value="generate">Generate new container schema</option>
     </select>
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
+</form>
+
+<form id="numBoxesForm"></form>
+<form id="paramForm" action="{{url_for('container')}}" method="post"></form>
+
+<script>
+    document.getElementById('paramtype').onchange = function(){
+        let type = document.getElementById('paramtype').value;
+        if(type=="load"){
+            document.getElementById("numBoxesForm").innerHTML="";
+            load_items();
+        }else{
+            document.getElementById("paramForm").innerHTML="";
+            container_params();
+            }
+
+        };
+
+
+    function load_items(){
+        optionHTML = '<label for="load_schema">Select Dispatch</label>';
+        optionHTML += '<select id = "load_schema" name ="savedSchemas">';
+        optionHTML += '<option disabled selected value> -- select an option -- </option>'
+        {% for sch in dispatches %}
+            optionHTML += '<option value="{{sch.body}}"> {{sch.name}}</option>';
+        {% endfor %}
+        optionHTML += '</select><br>';
+        optionHTML += '<input name="submitload" type="submit" value="Select">';
+
+        document.getElementById('paramForm').innerHTML = optionHTML;
+
+    };
+
+
+
+    function container_params(){
+        optionHTML = '<br><label for = "containerX">Container width (x)</label>';
+        optionHTML += '<input type="number" name="containerX"><br>';
+
+        optionHTML += '<label for = "containerY">Container depth (y)</label>';
+        optionHTML += '<input type="number" name="containerY"><br>';
+
+        optionHTML += '<label for = "container>">Container height (z)</label>';
+        optionHTML += '<input type="number" name="containerZ"><br><br>';
+        optionHTML += '<input type="submit" value="Submit" name="submitnew">'
+
+        document.getElementById('paramForm').innerHTML = optionHTML;
+    };
+
+</script>
 {% endblock %}

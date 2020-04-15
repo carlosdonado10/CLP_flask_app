@@ -3,7 +3,7 @@ from itertools import permutations
 from application.Utils.CLP_Algorithm.classes import Box, Space, AllocatedBox
 from application.Utils.CLP_Algorithm.clp_utils import get_container_params, max_items_left, select_space, calculate_fits, \
     get_auxiliary_box_params, reset_counters, get_box_coords, update_spaces, allocated_by_type
-
+from json import dumps
 #TODO: Enviar cosas a clp_utils y convertir en una clase
 
 problem_params = [
@@ -112,16 +112,16 @@ def volume_maximization(problem_params, container_params):
         space_list = update_spaces(space_list, auxiliary_container, item_list, num_iter)
         space_list = sorted(space_list, key=lambda x: x.id, reverse=False)
         print('iter done')
-    allocated_list = [i for i in allocated_list if i.id != 'auxiliary box']
+    allocated_list_dict = [i.params for i in allocated_list if i.id != 'auxiliary box']
+
     utilization = sum(map(lambda x: x.volume if x.id != 'auxiliary box' else 0, allocated_list))/container.volume
 
-    cord=[]
+    cord = []
     for bx in allocated_list:
         cord.append([bx.id, bx.x1, bx.x2, bx.y1, bx.y2, bx.z1, bx.z2])
 
+    return allocated_list, utilization, dumps(container.params), dumps(allocated_list_dict)
 
-    return allocated_list, utilization, container
-
-# al,_,_=volume_maximization(problem_params, container_params)
+# al,_,_,_ = volume_maximization(problem_params, container_params)
 
 # allocated_by_type(al)

@@ -1,39 +1,54 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 <!-- TODO: ADD CONTAINER IMAGE!-->
 {% block app_content %}
-        <h1> Box Parameters </h1><br>
-    <form action ="" method = "POST" novalidate>
-        {{ form.hidden_tag() }}
+<h1> Box Parameters </h1><br>
 
-        <p>
-            {{form.num_items}}
-            {{ form.add_box }}
+<div class="container-fluid">
+    <div class="row">
 
-        </p>
-        <div id = "paramTable">
-            <table style="width:40%">
-                <tr>
-                    <th>Box Width (x)</th>
-                    <th>Box Depth (y)</th>
-                    <th>Box Height (z)</th>
-                    <th>Number of Boxes</th>
-                </tr>
-
-
-                {% for bx in form.boxes %}
-                <tr>
-                    {% for fld in bx %}
-                    <th>{{ fld }}</th>
-                    {% endfor %}
-
-                </tr>
-                {% endfor %}
-            </table>
-
+        <div class="col-8">
+            <form action ="{{url_for('boxes', containerX=params.containerX,containerY=params.containerY, containerZ=params.containerZ)}}" method = "POST" >
+                <label> Types of boxes </label>
+                <input type="number" name="num_items" id="num_items" min="1" max="10">
+                <table id="boxParamTable"></table>
+            </form>
         </div>
 
-        <p>{{ form.submit() }} </p>
-        <p>{{ form.favorites() }} {{ form.fav_name }}</p>
-    </form>
+        <div class="col-4">
+            <form >
+                <label>Container Width (x): {{ params.containerX }}</label><br>
+                <label>Container Depth (y): {{ params.containerY }}</label><br>
+                <label>Container Height (z): {{ params.containerZ }}</label>
 
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.getElementById('num_items').onchange = function(){
+        let numB = document.getElementById('num_items').value;
+        optionHTML = '<table ><tr>' +
+            '<th> Box id</th>' +
+            '<th> Box width (x)</th>'+
+            '<th> Box depth (y)</th>'+
+            '<th> Box Height (z)</th>'+
+            '<th> Num Boxes </th></tr>';
+
+        for(let i=0; i<numB; i++){
+            optionHTML +='<tr>' +
+                '<th> <label id="box_id-' + i +'">' + i + '</label></th>' +
+                '<th> <input type="number" name="x-' + i + '" step="0.01"></th>'+
+                '<th> <input type="number" name="y-' + i + '" step="0.01"></th>'+
+                '<th> <input type="number" name="z-' + i +'" step="0.01"></th>'+
+                '<th> <input type="number" name="num_items-' + i + '" step="0.01"> </th></tr>';
+        }
+
+        optionHTML += '<br><input type="submit" value="Submit">';
+        document.getElementById('boxParamTable').innerHTML = optionHTML;
+
+    }
+</script>
 {% endblock %}

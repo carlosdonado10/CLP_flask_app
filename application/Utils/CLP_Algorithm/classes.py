@@ -23,6 +23,7 @@ class Box(object):
 
 class AllocatedBox(Box):
     def __init__(self, **kwargs):
+        Box.__init__(self, **kwargs)
         self.x2 = kwargs.get('x2'),
         self.y1 = kwargs.get('y1'),
         self.y2 = kwargs.get('y2'),
@@ -30,7 +31,18 @@ class AllocatedBox(Box):
         self.z1 = kwargs.get('z1'),
         self.z2 = kwargs.get('z2'),
         self.iteration = kwargs.get('num_iter')
-        Box.__init__(self, **kwargs)
+        self.params.update({
+            'x1': self.x1[0],
+            'x2': self.x2[0],
+            'y1': self.y1[0],
+            'y2': self.y2[0],
+            'z1': self.z1[0],
+            'z2': self.z2[0],
+            'volume': self.volume,
+            'iteration': self.iteration
+        })
+
+
 
     def is_in_space(self, space):
         return not (space.x1 >= self.x2[0] or space.x2 <= self.x1[0] or space.y1 >= self.y2[0] or space.y2 <= self.y1[0] or \
@@ -45,8 +57,10 @@ class AllocatedBox(Box):
             "x1": self.x1[0],
             "y1": self.y1[0],
             "z1": self.z1[0],
+            'volume': self.volume,
             'iteration': self.iteration
         })
+
 
 class Space(object):
     def __init__(self, item_id="", **kwargs):
@@ -59,7 +73,8 @@ class Space(object):
         self.params = {
             'x': self.x,
             'y': self.y,
-            'z': self.z
+            'z': self.z,
+            'volume': self.volume
         }
 
     def __repr__(self):

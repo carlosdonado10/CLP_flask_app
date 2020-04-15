@@ -28,87 +28,71 @@ def index():
     return render_template('index.html', params=params)
 
 
-@application.route('/container', methods=['GET', 'POST'])
+@application.route('/container', methods=['POST', 'GET'])
 def container():
-    form = ContainerParams()
-    if form.validate_on_submit():
-        flash(request.data.decode('utf-8'))
-        return redirect(url_for('boxes', containerX=form.containerX.data,
-                                containerY=form.containerY.data, containerZ=form.containerZ.data))
+    dispatches = Dispatch.query.filter_by(user_id=current_user.id)
+    if request.method == "POST" and request.form.get('submitnew') is not None:
+        flash('new')
+        return redirect(url_for('boxes', containerX=request.form.get('containerX'),
+                                containerY=request.form.get('containerY'), containerZ=request.form.get('containerZ')))
+    elif request.method == "POST" and request.form.get('submitload') is not None:
+        containerParams, boxesParams = request.form.get('savedSchemas').split('$$$')
+        return redirect(url_for('results', container_params=containerParams, boxes_params=boxesParams))
 
-    return render_template('container.html', form=form)
+    return render_template('container.html', dispatches=dispatches)
 
 
 # TODO: Save info to pass to algorithm
 @application.route('/boxes/<containerX>/<containerY>/<containerZ>', methods=['GET', 'POST'])
 def boxes(containerX, containerY, containerZ):
-    form = boxesParams()
-    if form.add_box.data:
-        form.boxes.append_entry()
-        return render_template('boxes.html', form=form)
-
-    if form.favorites.data:
-        container_params = {"x1": 0,
+    params = {"containerX": containerX,
+              "containerY": containerY,
+              "containerZ": containerZ}
+    if request.method == 'POST':
+        containerParams = {"x1": 0,
                             "y1": 0,
                             "z1": 0,
                             "x2": float(containerX),
                             "y2": float(containerY),
                             "z2": float(containerZ)}
 
-        results = form.boxes.data
-        boxes_params = []
-        for bx in results:
-            box_params = dict({"num_items": bx.get("num_boxes"),
-                               "x": bx.get("boxX"),
-                               "y": bx.get("boxY"),
-                               "z": bx.get("boxZ")})
-            boxes_params.append(box_params)
+        results = request.form.to_dict()
+        boxesParams = [{} for i in range(int(results.get('num_items')))]
+        flash(boxesParams)
+        for key, itm in results.items():
+            if key != "num_items":
+                key_, idx = key.split("-")
+                if key[:9] == "num_items":
+                    boxesParams[int(idx)].update({key_: int(itm)})
+                else:
+                    boxesParams[int(idx)].update({key_: float(itm)})
 
-        d = Dispatch(
-            name=form.fav_name.data,
-            body=url_for('results', container_params=dumps(container_params), boxes_params=dumps(boxes_params)),
-            user_id=current_user.id
+        containerParams = dumps(containerParams)
+        boxesParams = dumps(boxesParams)
+        return redirect(url_for('results', container_params=containerParams, boxes_params=boxesParams))
 
-        )
-        db.session.add(d)
-        db.session.commit()
-        return render_template('boxes.html', form=form)
-
-    if form.validate_on_submit():
-        container_params = {"x1": 0,
-                            "y1": 0,
-                            "z1": 0,
-                            "x2": float(containerX),
-                            "y2": float(containerY),
-                            "z2": float(containerZ)}
-
-        results = form.boxes.data
-        boxes_params = []
-        for bx in results:
-            box_params = dict({"num_items": bx.get("num_boxes"),
-                              "x": bx.get("boxX"),
-                              "y": bx.get("boxY"),
-                              "z": bx.get("boxZ")})
-
-            boxes_params.append(box_params)
+    return render_template('boxes.html', params=params)
 
 
-        return redirect(url_for('results', container_params=dumps(container_params), boxes_params=dumps(boxes_params)))
-
-    return render_template('boxes.html', form=form)
-
-
-@application.route('/results/<container_params>/<boxes_params>')
+@application.route('/results/<container_params>/<boxes_params>', methods=['GET', 'POST'])
 def results(container_params, boxes_params):
+    if request.method == "POST":
+        favorite = Dispatch(name=request.form.get('fav_name'),
+                            body=container_params+'$$$'+boxes_params, user_id=current_user.id)
+        db.session.add(favorite)
+        db.session.commit()
 
-    allocated_list, utilization, container = volume_maximization(problem_params=loads(boxes_params),
+    params = {'container_params': container_params,
+              'boxes_params': boxes_params}
+    allocated_list, utilization, container, allocated_json = volume_maximization(problem_params=loads(boxes_params),
                                                                  container_params=loads(container_params))
 
-
     total_boxes = 400
-
+    # max_iter = max(allocated_list, key=lambda x: x.iteration).iteration
+    max_iter=3
     return render_template('results.html', allocated_list=allocated_list, utilization=utilization, container=container,
-                           total_boxes=total_boxes, boxes_params=boxes_params)
+                           total_boxes=total_boxes, boxes_params=boxes_params, params=params, allocated_list_json=allocated_json,
+                           max_iter=max_iter)
 
 
 
@@ -121,10 +105,10 @@ def results(container_params, boxes_params):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
+
+    if request.method == 'POST':
+        user = User.query.filter_by(username=request.form.get('username')).first()
+        if user is None or not user.check_password(request.form.get('password')):
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user)
@@ -132,7 +116,8 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+    return render_template('login.html', title='Sign In')
+
 
 @application.route('/logout')
 def logout():
@@ -144,14 +129,13 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
+    if request.method == 'POST':
+        user = User(username=request.form.get('username'), email=request.form.get('email'))
+        user.set_password(request.form.get('password1'))
         db.session.add(user)
         db.session.commit()
-        flash('You are now a registered user!')
+
         return redirect(url_for('login'))
-    return render_template('registration.html', title='Register', form=form)
+    return render_template('registration.html', title='Register')
 
 

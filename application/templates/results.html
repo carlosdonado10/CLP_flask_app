@@ -1,57 +1,159 @@
 {% extends "base.html" %}
 {% block app_content %}
-<body>
 
-<div id="visualizacion" class="col-md-8"></div>
-<div class="row" style="margin-top:10px">
-    <div class="col-md-4">
-        <form style="float:right;margin-top:10px;border:solid;border-radius: 10px">
-            <label> Container Utilization: {{ utilization }}</label><br>
-            <label> Total Boxes Requested: {{total_boxes}}</label><br>
-            <label> Total Allocated Boxes: {{allocated_list|length}}</label><br>
-            <div>
-              <input type="range" id="iteration" name="iteration" min="0" max="4" value="4" step="1">
-            </div>
-        </form>
+<div class="row">
+
+    {#<!--
+    <form action="{{url_for('results', container_params=params.container_params, boxes_params=params.boxes_params)}}" method="post">
+        <h3> Add to favorites</h3><br>
+        <label>Favorite name</label>
+        <input type="text" name="fav_name"><br>
+        <input type="submit" value="save to favorites">
+    </form>-->#}
 
 
-        <table id="allocated_table"></table>
+    <div id="visualizacion" class="col-sm-8">
+        <h1> Results</h1>
+        <hr>
+        <input type="radio" name="vis_type" value="full" id="full">Full Organization
+        <input type="radio" name="vis_type" id="step" value="by_iter">Step-by-step
+        <form id="step-slider"></form>
+        <div id="vis_final"></div>
     </div>
+
+    <div class="col-sm-4" style="border-left-style: solid; border-left-color: #d4dbda; border-left-width: 1px">
+
+            <h2> Instance Parameters</h2>
+        <h5>Container Parameters</h5>
+        <table id="container_table" class="table table-hover table-sm">
+            <tr>
+                <th>With(x)</th>
+                <th>Depth(y)</th>
+                <th>Height(z)</th>
+                <th>Volume</th>
+            </tr>
+        </table>
+        <h5>Boxes Parameters</h5>
+        <table id="boxes_table" class="table table-hover table-sm">
+            <tr>
+                <th>With(x)</th>
+                <th>Depth(y)</th>
+                <th>Height(z)</th>
+                <th>Volume</th>
+            </tr>
+        </table>
+
+
+
+            <h3>Results</h3>
+
+            <table id="results_table" class="table table-hover table-sm">
+                <tr>
+                    <th>Box id</th>
+                    <th>Color</th>
+                    <th>Number Allocated</th>
+                    <th>% of Volume</th>
+                </tr>
+            </table>
+
+
+    </div>
+
+
+
 </div>
 
     <script src="http://threejs.org/build/three.min.js"></script>
     <script type="text/javascript" src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script>
+
+        var boxes = JSON.parse({{allocated_list_json|tojson}});
+        var three_cubes = [];
+        var container = JSON.parse({{container|tojson}});
+        var colors = {
+            0: 0xe14c14,
+            1: 0x71e114,
+            2: 0x1439e1,
+            3: 0xd7e114,
+            4: 0xe114e1,
+            5: 0x14d7e1
+        };
+
         init();
         init_params();
         plot_boxes();
-        document.getElementById("iteration").onchange = function(){
-            let iter = document.getElementById("iteration").value;
-            alert(iter);
-        }
         render();
 
-        function init_params(){
-            var allocated = {};
-            var requested = {};
-            let i = 0;
-            {% for box in allocated_list %}
-                allocated[{{box.type}}]+=1;
-            {% endfor %}
+       document.getElementById("full").onchange = function(){
+            document.getElementById("step-slider").innerHTML="";
+            color_cubes(100);
+        };
 
-            optionHTML = "                <table id='allocated_table'> <tr>\n" +
-                "                    <th>Box type</th>\n" +
-                "                    <th>Allocated_boxes</th>\n" +
-                "                    <th>color</th>\n" +
-                "                </tr>";
-            for(let i=0; i<allocated.length;i++){
-                optionHTML+="<tr><th>" + i + "</th>" +
-                        "<th>" + allocated[i] + "</th>" +
-                        "<th>" + colors[i] + "</th></tr>";
-
+       document.getElementById("step").onchange = function(){
+           step();
+            document.getElementById("ex9").onchange = function(){
+                let slid = document.getElementById("ex9").value;
+                color_cubes(slid);
             }
-            optionHTML+="</table>"
-            document.getElementById('allocated_table').innerHTML=optionHTML;
+        };
+
+        function init_params(){
+            let container_table = document.getElementById('container_table');
+            let boxes_table = document.getElementById('boxes_table');
+            let res_table = document.getElementById('results_table');
+            let optionHTML = res_table.innerHTML;
+            var sample_boxes = {};
+
+            let colors_str = {
+            0: "0xe14c14",
+            1: "0x71e114",
+            2: "0x1439e1",
+            3: "0xd7e114",
+            4: "0xe114e1",
+            5: "0x14d7e1"
+        };
+
+            boxes_by_type={};
+            for(let i=0; i<boxes.length; i++) {
+                if(boxes_by_type[boxes[i].type] == undefined){
+                    boxes_by_type[boxes[i].type]=1;
+                    sample_boxes[boxes[i].type] = boxes[i];
+                }else{
+                    boxes_by_type[boxes[i].type]+=1;
+                }
+            }
+
+            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
+                let contribution = (boxes_by_type[i]*boxes[i].volume)/container.volume;
+                optionHTML += '<tr>';
+                optionHTML += '<td>' + i + '</td>';
+                optionHTML += '<td id="coloredtd' + i +'"></td>';
+                optionHTML += '<td> <label>' + boxes_by_type[i] + '</label></td>';
+                optionHTML += '<td><label>' + 100*boxes_by_type[i]*sample_boxes[i].volume/container.volume + '%</label></td></tr>';
+            }
+            res_table.innerHTML = optionHTML;
+
+            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
+                document.getElementById("coloredtd" + i).style.backgroundColor=colors_str[i].replace("0x", '#');
+            }
+
+            optionHTML = container_table.innerHTML;
+            optionHTML += '<tr><td>' + container.x + '</td>'
+            optionHTML += '<td>' + container.y + '</td>'
+            optionHTML += '<td>' + container.z + '</td>'
+            optionHTML += '<td>' + container.z + '</td></tr>'
+
+            container_table.innerHTML = optionHTML;
+
+            optionHTML = boxes_table.innerHTML;
+            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
+                optionHTML += '<tr><td>' + sample_boxes[i].x + '</td>'
+                optionHTML += '<td>' + sample_boxes[i].y + '</td>'
+                optionHTML += '<td>' + sample_boxes[i].z + '</td>'
+                optionHTML += '<td>' + sample_boxes[i].volume + '</td></tr>'
+            }
+
+            boxes_table.innerHTML=optionHTML;
         }
 
 
@@ -61,22 +163,23 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth*0.6, window.innerHeight*0.6);
-            document.getElementById("visualizacion").appendChild(renderer.domElement);
-            var geometry = new THREE.BoxGeometry({{ container.x }}, {{ container.y }}, {{ container.z}});
+            document.getElementById('vis_final').innerHTML="";
+            document.getElementById("vis_final").appendChild(renderer.domElement);
+            var geometry = new THREE.BoxGeometry(container.x, container.y, container.z);
             var material = new THREE.MeshBasicMaterial({color: 0x9b9b9b });
             material.transparent = true;
             material.opacity = 0;
             cube = new THREE.Mesh(geometry, material);
             //scene.add(cube);
-            cube.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+            cube.position.set(container.x/2, container.y /2, container.z/2);
             //Esta posicion es el centro
 
             edges = new THREE.EdgesHelper(cube, 0x0000);
             edges.material.linewidth = 2;
             scene.add(edges);
-            edges.position.set({{container.x}}/2, {{ container.y }}/2, {{ container.z}}/2);
+            edges.position.set(container.x/2,  container.y /2,  container.z/2);
 
-            camera.position.z = Math.max({{container.x}}, {{ container.y }}, {{ container.z}})*3;
+            camera.position.z = Math.max(container.x,  container.y ,  container.z)*3;
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.update();
 
@@ -84,52 +187,70 @@
 
         function plot_boxes(){
 
-            var colors = {
-                0: 0xe14c14,
-                1: 0x71e114,
-                2: 0x1439e1,
-                3: 0xd7e114,
-                4: 0xe114e1,
-                5: 0x14d7e1
-            };
-            {% for box in allocated_list %}
-            var geometry = new THREE.BoxGeometry({{ box.x }}, {{ box.y }}, {{ box.z}});
+            for(let i=0; i<boxes.length; i++){
 
+                var geometry = new THREE.BoxGeometry(boxes[i].x, boxes[i].y, boxes[i].z);
+                var material = new THREE.MeshBasicMaterial({color: colors[boxes[i].type]});
+                material.transparent = true;
+                material.opacity = 0.5;
+                cube = new THREE.Mesh(geometry, material);
+                three_cubes.push({'cube': cube, 'box': boxes[i]})
+                scene.add(cube);
 
-                var material = new THREE.MeshBasicMaterial({color: colors[{{box.type}}]});
-            material.transparent = true;
+                cube.position.set((boxes[i].x1 + boxes[i].x2)/2, (boxes[i].y1 + boxes[i].y2)/2, (boxes[i].z1 + boxes[i].z2)/2);
+                edges = new THREE.EdgesHelper(cube, 0x0000);
+                edges.material.linewidth = 5;
+                scene.add(edges);
+                edges.position.set((boxes[i].x1+boxes[i].x2)/2, (boxes[i].y1 + boxes[i].y2)/2, (boxes[i].z1 + boxes[i].z2)/2);
+            }
 
-            material.opacity = 0.5;
-            cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-            cube.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
-
-            edges = new THREE.EdgesHelper(cube, 0x0000);
-            edges.material.linewidth = 5;
-            scene.add(edges);
-            //edges.position.set({{box.x1[0]}}, {{box.y1[0]}}, {{box.z1[0]}});
-            edges.position.set(({{box.x1[0]}}+{{box.x2[0]}})/2, ({{box.y1[0]}} + {{box.y2[0]}})/2, ({{box.z1[0]}} + {{box.z2[0]}})/2);
-
-            {% endfor %}
         };
 
+        function color_cubes(iter){
+            let colors_temp = {};
 
+            for(let i=0; i<Object.keys(colors).length; i++){
+                if(i>iter){
+                    colors_temp[i] = 0x9c9c9c;
+                }else{
+                    colors_temp[i] = colors[i];
+                }
+            }
+
+            for(let i=0; i<three_cubes.length; i++){
+                three_cubes[i].cube.material.color.setHex(colors_temp[three_cubes[i].box.type])
+            }
+        }
 
         function render() {
             requestAnimationFrame(render);
-            /*cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
-            edges.rotation.x += 0.01;
-            edges.rotation.y += 0.01;*/
             controls.update();
             renderer.render(scene, camera);
         };
 
+        /*function step(){
+           var slider_form = document.getElementById('step-slider');
+           optionHTML = slider_form.innerHTML;
+            optionHTML += '<h4>Select Iteration</h4>'
+            optionHTML += '<input id="ex9" type="text" />';
+            slider_form.innerHTML=optionHTML;
+            //TODO: Bootstrap slider
+            var slider = new Slider("#ex9", {
+                precision: 1,
+                value: 8});
+            document.getElementById('step-slider').appendChild(slider);
+        }*/
+
+        function step(){
+            var slider_form = document.getElementById('step-slider');
+           optionHTML = slider_form.innerHTML;
+            optionHTML += '<h4>Select Iteration</h4>'
+            optionHTML += '<input type="range" class="custom-range" min="0" max="{{max_iter}}" id="ex9" step="1" style="width:20%"/>';
+            slider_form.innerHTML=optionHTML;
+        }
 
 
     </script>
 
-
-</body>
 
 {% endblock %}

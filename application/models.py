@@ -43,15 +43,18 @@ class User(UserMixin, db.Model):
             followers.c.dollowed_id == user.id).count() > 0
 
     def followed_dispatches(self):
-        return Dispatch.query.join(
+        followed = Dispatch.query.join(
             followers, (followers.c.followed_id == Dispatch.user_id)).filter(
             followers.c.follower.id == self.id).order_by(
             Dispatch.timestamp.desc())
+        own = Dispatch.query.filter_by(user_id=self.id)
+        return followed.union(own).order_by(Dispatch.timestamp)
 
 
 class Dispatch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
+    description = db.Column(db.String(150))
     body = db.Column(db.String(300))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

@@ -43,9 +43,7 @@
             </tr>
         </table>
 
-
-
-            <h3>Results</h3>
+            <h5>Allocation</h5>
 
             <table id="results_table" class="table table-hover table-sm">
                 <tr>
@@ -55,7 +53,15 @@
                     <th>% of Volume</th>
                 </tr>
             </table>
-
+    <hr>
+        <h5>Add to Favorites</h5>
+        <form id="fav-form" method="post" action="{{url_for('results', container_params=params.container_params, boxes_params=params.boxes_params)}}">
+            <div class="form-group">
+                <label for="fav-name">Name</label><input type="text" name="fav-name" id="fav-name" placeholder="Enter dispatch name" class="form-control"><br> <!--TODO: ADD STYLES-->
+                <label for="fav-description">Description</label><input type="text" name="fav-description" id="fav-description" placeholder="Enter a short description..." class="form-control"><br>
+                <input type="submit" value="Add to Favorites" class="btn btn-primary">
+            </div>
+        </form>
 
     </div>
 

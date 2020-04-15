@@ -5,7 +5,7 @@
     <h1>Container Dimensions</h1>
 <form method="post" id="select_type">
     <label for="paramtype">Load or Generate Dispatch?</label>
-    <select id="paramtype" name="holaa">
+    <select id="paramtype" name="holaa" class="form-control" style="width:20%">
          <option disabled selected value> -- select an option -- </option>
         <option value="load"> Load from saved items</option>
         <option value="generate">Generate new container schema</option>
@@ -30,14 +30,14 @@
 
 
     function load_items(){
-        optionHTML = '<label for="load_schema">Select Dispatch</label>';
-        optionHTML += '<select id = "load_schema" name ="savedSchemas">';
+        optionHTML = '<label for="load_schema">Select Dispatch</label><br>';
+        optionHTML += '<select id = "load_schema" name ="savedSchemas" class="form-control" style="width: 20%">';
         optionHTML += '<option disabled selected value> -- select an option -- </option>'
         {% for sch in dispatches %}
             optionHTML += '<option value="{{sch.body}}"> {{sch.name}}</option>';
         {% endfor %}
         optionHTML += '</select><br>';
-        optionHTML += '<input name="submitload" type="submit" value="Select">';
+        optionHTML += '<input name="submitload" type="submit" value="Select" class="btn btn-primary">';
 
         document.getElementById('paramForm').innerHTML = optionHTML;
 
@@ -47,14 +47,14 @@
 
     function container_params(){
         optionHTML = '<br><label for = "containerX">Container width (x)</label>';
-        optionHTML += '<input type="number" name="containerX"><br>';
+        optionHTML += '<input type="number" name="containerX" class="form-control" style="width:10%"><br>';
 
         optionHTML += '<label for = "containerY">Container depth (y)</label>';
-        optionHTML += '<input type="number" name="containerY"><br>';
+        optionHTML += '<input type="number" name="containerY" class="form-control" style="width:10%"><br>';
 
         optionHTML += '<label for = "container>">Container height (z)</label>';
-        optionHTML += '<input type="number" name="containerZ"><br><br>';
-        optionHTML += '<input type="submit" value="Submit" name="submitnew">'
+        optionHTML += '<input type="number" name="containerZ" class="form-control" style="width:10%"><br><br>';
+        optionHTML += '<input type="submit" value="Submit" name="submitnew" class="btn btn-primary">'
 
         document.getElementById('paramForm').innerHTML = optionHTML;
     };

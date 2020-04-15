@@ -28,6 +28,15 @@ def index():
     return render_template('index.html', params=params)
 
 
+@application.route('/user/<username>')
+@login_required
+def user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    dispatches=[
+            {'author': user, 'description': 'holaaaaaa mundooo'}
+        ]
+    return render_template('user.html', user=user, dispatches=dispatches)
+
 @application.route('/container', methods=['POST', 'GET'])
 def container():
     dispatches = Dispatch.query.filter_by(user_id=current_user.id)
@@ -48,7 +57,7 @@ def boxes(containerX, containerY, containerZ):
     params = {"containerX": containerX,
               "containerY": containerY,
               "containerZ": containerZ}
-    if request.method == 'POST':
+    if request.method == 'POST' and request.form.get('submit') is not None:
         containerParams = {"x1": 0,
                             "y1": 0,
                             "z1": 0,
@@ -71,13 +80,18 @@ def boxes(containerX, containerY, containerZ):
         boxesParams = dumps(boxesParams)
         return redirect(url_for('results', container_params=containerParams, boxes_params=boxesParams))
 
+    elif request.method == 'POST' and request.form.get('updateContainer') is not None:
+        return redirect(url_for('boxes', containerX=request.form.get('contXupdate'),
+                                containerY=request.form.get('contYupdate'), containerZ=request.form.get('contZupdate')))
+
     return render_template('boxes.html', params=params)
 
 
+# TODO: Change orientations?
 @application.route('/results/<container_params>/<boxes_params>', methods=['GET', 'POST'])
 def results(container_params, boxes_params):
     if request.method == "POST":
-        favorite = Dispatch(name=request.form.get('fav_name'),
+        favorite = Dispatch(name=request.form.get('fav-name'), description=request.form.get('fav-description'),
                             body=container_params+'$$$'+boxes_params, user_id=current_user.id)
         db.session.add(favorite)
         db.session.commit()
@@ -95,12 +109,7 @@ def results(container_params, boxes_params):
                            max_iter=max_iter)
 
 
-
-
-# TODO: Change orientations?
-
 #Login Logic
-
 @application.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:

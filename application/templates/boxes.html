@@ -2,24 +2,36 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 <!-- TODO: ADD CONTAINER IMAGE!-->
 {% block app_content %}
-<h1> Box Parameters </h1><br>
 
 <div class="container-fluid">
     <div class="row">
 
         <div class="col-8">
-            <form action ="{{url_for('boxes', containerX=params.containerX,containerY=params.containerY, containerZ=params.containerZ)}}" method = "POST" >
+            <h1> Box Parameters </h1>
+            <hr>
+            <form action ="{{url_for('boxes', containerX=params.containerX, containerY=params.containerY, containerZ=params.containerZ)}}" method = "post" >
                 <label> Types of boxes </label>
-                <input type="number" name="num_items" id="num_items" min="1" max="10">
+                <input type="number" name="num_items" id="num_items" min="1" max="10" class="form-control" style="width: 10%">
                 <table id="boxParamTable"></table>
             </form>
         </div>
 
-        <div class="col-4">
-            <form >
-                <label>Container Width (x): {{ params.containerX }}</label><br>
-                <label>Container Depth (y): {{ params.containerY }}</label><br>
-                <label>Container Height (z): {{ params.containerZ }}</label>
+        <div class="col-4" style="border-left-style: solid; border-left-color: #d4dbda; border-left-width: 1px">
+            <h1>Container Parameters</h1>
+            <form method="post" action="">
+                <table class="table table-hover table-sm">
+                    <tr>
+                        <th>Container Width(x)</th>
+                        <th>Container Depth(y)</th>
+                        <th>Container Height(z)</th>
+                    </tr>
+                    <tr>
+                        <td><input type="number" value="{{ params.containerX}}" class="form-control" name="contXupdate"></td>
+                        <td><input type="number" value="{{ params.containerY}}" class="form-control" name="contYupdate"></td>
+                        <td><input type="number" value="{{ params.containerZ}}" class="form-control" name="contZupdate"></td>
+                    </tr>
+                </table>
+                <input type="submit" value="Update Container" class="btn btn-primary" name="updateContainer">
 
             </form>
         </div>
@@ -40,13 +52,13 @@
         for(let i=0; i<numB; i++){
             optionHTML +='<tr>' +
                 '<th> <label id="box_id-' + i +'">' + i + '</label></th>' +
-                '<th> <input type="number" name="x-' + i + '" step="0.01"></th>'+
-                '<th> <input type="number" name="y-' + i + '" step="0.01"></th>'+
-                '<th> <input type="number" name="z-' + i +'" step="0.01"></th>'+
-                '<th> <input type="number" name="num_items-' + i + '" step="0.01"> </th></tr>';
+                '<th> <input type="number" name="x-' + i + '" step="0.01" class="form-control"></th>'+
+                '<th> <input type="number" name="y-' + i + '" step="0.01" class="form-control"></th>'+
+                '<th> <input type="number" name="z-' + i +'" step="0.01" class="form-control"></th>'+
+                '<th> <input type="number" name="num_items-' + i + '" step="1" class="form-control"> </th></tr>';
         }
 
-        optionHTML += '<br><input type="submit" value="Submit">';
+        optionHTML += '<br><input type="submit" value="Submit" name="submit" class="btn btn-primary">';
         document.getElementById('boxParamTable').innerHTML = optionHTML;
 
     }

@@ -1,0 +1,12 @@
+{% extends "base.htnl" %}
+
+{% block app_content %}
+<h1> User: {{ user.username }}</h1>
+
+{% for disp in dispatches %}
+    <p>
+        {{disp.author.username}} says: <b>{{ disp.description}}</b>
+    </p>
+{% endfor %}}
+
+{% endblock %}

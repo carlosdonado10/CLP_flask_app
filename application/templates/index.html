@@ -3,9 +3,49 @@
 {% block app_content %}
     <body>
         <h1>Hi, {{ params.user.username }}!</h1>
-        {% for post in params.posts %}
-        <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
-        {% endfor %}
+        <form action="{{ url_for('index') }}" method="POST">
+            <label for="post">New Post!</label><textarea name="post" id=post rows="3" class="form-control"></textarea> <br>
+            <select id = "load_schema" name ="savedSchemas" class="form-control" style="width: 30%">
+            <option disabled selected value> -- Attach a Dispatch from Favorites -- </option>
+                {% for disp in dispatches %}
+                    <option value="{{disp.name}}">{{disp.name}}</option>
+                {% endfor %}
+                <input type="submit" class="btn btn-primary" name="post" value="POST!"><br><hr>
+
+        </form>
+
+        <table id="posts-table" class="table table-hover"> </table>
+
     </body>
+
+    <script>
+        var posts = JSON.parse({{params.posts|tojson}});
+        posts_table = document.getElementById('posts-table');
+        optionHTML = posts.innerHTML;
+        for(let i=0; i<posts.length; i++){
+            optionHTML += '<tr></tr><td>' + posts[i].user_name + '</td>'
+            optionHTML += '<td>' + posts[i].post_body + '</td>'
+            optionHTML += '<td>' + posts[i].post_timestamp + '</td>'
+            if(Object.keys(posts[i]).includes('dispatch_name')){
+                optionHTML += '<td style="text-align:center"><a href="' + posts[i].dispatch_body + '">View container</a></td>'
+            }else{
+                optionHTML += '<td style="color:#a4abaa; text-align:center">--No dispatch associated--</td>'
+            }
+                '</tr>'
+        }
+        posts_table.innerHTML=optionHTML;
+
+
+   /* let optionHTML = document.getElementById('load_schema').innerHTML;
+        {% for sch in dispatches %}
+            optionHTML += '<option value="{{sch.body}}"> {{sch.name}}</option>';
+        {% endfor %}
+
+        document.getElementById('load_schema').innerHTML = optionHTML;
+*/
+    </script>
+
+
+
 {% endblock %}
 

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1> Edit Profile</h1>
+    <form action="" method="post">
+        <label for="username">Username</label><input type="text" name="username" placeholder="Type new username" class="form-control" style="width:20%">
+        <label for="about_me">About me</label><textarea name="about_me" placeholder="Type new about me information" class="form-control" style="width:20%" rows="10" ></textarea><br><!--TODO: Limit length -->
+        <input type="submit" class="btn btn-primary" value="Apply Changes!">
+
+
+    </form>
+{% endblock %}

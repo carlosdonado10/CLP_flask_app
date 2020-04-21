@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<h1>Search Results for: {{search_value}}</h1>
+
+<div id="response">
+    <table class="table table-hover" style="width:60%">
+        <tr>
+            <th>Profile Picture</th>
+            <th>Username</th>
+            <th>Following</th>
+            <th>Followers</th>
+            <th>Link</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td> <img src="{{ user.avatar(36) }}"</td>
+            <td> {{ user.username }}</td>
+            <td> {{ user.get_num_following() }}</td>
+            <td> {{ user.get_num_followers() }}</td>
+            <td> <a href="{{url_for('user', username=user.username)}}">View Profile</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+
+{% endblock %}

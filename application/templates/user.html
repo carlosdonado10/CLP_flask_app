@@ -1,12 +1,38 @@
-{% extends "base.htnl" %}
+{% extends "base.html" %}
 
 {% block app_content %}
-<h1> User: {{ user.username }}</h1>
+<div class="row">
+    <div class="col-sm-10">
 
-{% for disp in dispatches %}
-    <p>
-        {{disp.author.username}} says: <b>{{ disp.description}}</b>
-    </p>
-{% endfor %}}
+        <table>
+            <tr vallign="top">
+                <td><img src="{{ user.avatar(128) }}"</td>
+                <td><h1> User: {{ user.username }}</h1></td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-2">
+        <form action="{{url_for('user', username=user.username)}}" method="post">
+            {% if current_user.is_following(user) %}
+            <input type="submit" name="unfollow" id="unfollow" value="unfollow" class="btn btn-primary">
+            {% elif current_user.username == user.username %}
+            {% else %}
+            <input type="submit" name="follow" id="follow" value="follow" class="btn btn-primary">
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% if user.about_me %} <p>{{ user.about_me }}</p>{% endif %}
+{% if user.last_seen %} <p>Last seen on: {{ user.last_seen }}</p>{% endif %}
+<hr>
+{% for post in params %}
+<table>
+    <tr valign="top">
+        <td><img src="{{ user.avatar(36) }}"></td>
+        <td>{{ post.author.username }} says: <b>{{ post.body }}</b></td>
+    </tr>
+</table>
+
+{% endfor %}
 
 {% endblock %}

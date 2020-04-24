@@ -256,7 +256,7 @@ def register():
 def search():
     if request.method == 'POST' and request.form.get('search-value'):
 
-        users = User.query.filter(User.username.like('%adm%'))
+        users = User.query.filter(User.username.like(f"%{request.form.get('search-value')}%"))
 
         return render_template('search.html', users=users.all(), search_value=request.form.get('search-value'))
     return redirect(url_for('index'))

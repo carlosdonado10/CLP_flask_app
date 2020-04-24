@@ -7,5 +7,11 @@
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/app.db</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="clpdb" uuid="5d435afe-3fc5-43f7-85bd-d270e9e4dcf8">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://appdb.clnghs8r4dnk.us-east-2.rds.amazonaws.com/app</jdbc-url>
+    </data-source>
   </component>
 </project>

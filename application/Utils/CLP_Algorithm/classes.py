@@ -1,13 +1,19 @@
 from json import dumps
-# TODO: Incluir visualizaciones en las clases
-# TODO: Crear clases para las listas ¿que contienen métodos de visualización?
+from itertools import permutations
+
+rotations = list()
+
 class Box(object):
     def __init__(self, **kwargs):
+
         self.id = kwargs.get('id')
         self.type = kwargs.get('type')
         self.x = kwargs.get('x')
         self.y = kwargs.get('y')
         self.z = kwargs.get('z')
+        self.original_dims = (self.x, self.y, self.z)
+        self.rotations = permutations(['x', 'y', 'z'],3)
+        self.cur_rot = tuple()
         self.volume = self.x*self.y*self.z
         self.params = {
             'id': kwargs.get('id'),
@@ -19,6 +25,28 @@ class Box(object):
 
     def __repr__(self):
         return f"""box : {self.id}"""
+
+    def rotate(self):
+        try:
+            rot = self.rotations.__next__()
+            self.x = getattr(self, rot[0])
+            self.y = getattr(self, rot[1])
+            self.z = getattr(self, rot[2])
+            self.cur_rot = rot
+            return True
+        except:
+            self.rotations = permutations(['x', 'y', 'z'],3)
+            return False
+
+    def undo_rotations(self):
+        self.x = self.original_dims[0]
+        self.y = self.original_dims[1]
+        self.z = self.original_dims[2]
+
+    def rotate_to(self, orientation:tuple):
+        self.x = getattr(self, orientation[0])
+        self.y = getattr(self, orientation[1])
+        self.z = getattr(self, orientation[2])
 
 
 class AllocatedBox(Box):

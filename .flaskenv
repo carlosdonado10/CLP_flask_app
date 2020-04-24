@@ -1,2 +1,0 @@
-FLASK_APP=clp_app.py
-FLASK_DEBUG=1

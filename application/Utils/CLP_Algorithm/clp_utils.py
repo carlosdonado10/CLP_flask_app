@@ -95,30 +95,36 @@ def max_items_left(item_list: list):
 
 
 def calculate_fits(space, bx, ax, num_items):
-
+    rotation_fits = []
     ax_dist = {}
-    missing_axis = ''.join(list(set(['x', 'y', 'z'])-set(ax)))
+    cond = True
+    while bx.rotate():
+        missing_axis = ''.join(list(set(['x', 'y', 'z'])-set(ax)))
 
-    ax_dist[ax[0]] = min([floor(space.params.get(ax[0]) / bx.params.get(ax[0])), num_items])
-    ax_dist[ax[1]] = min([floor(space.params.get(ax[1]) / bx.params.get(ax[1])), floor(num_items / ax_dist[ax[0]])]) \
-                    if ax_dist[ax[0]] > 0 else 0
-    ax_dist[missing_axis] = 1
+        ax_dist[ax[0]] = min([floor(space.params.get(ax[0]) / bx.params.get(ax[0])), num_items])
+        ax_dist[ax[1]] = min([floor(space.params.get(ax[1]) / bx.params.get(ax[1])), floor(num_items / ax_dist[ax[0]])]) \
+                        if ax_dist[ax[0]] > 0 else 0
+        ax_dist[missing_axis] = 1
 
-    depth_fit = space.params.get('x') - (bx.params.get('x') * ax_dist['x'])
-    height_fit = space.params.get('y') - (bx.params.get('y') * ax_dist['y'])
-    length_fit = space.params.get('z') - (bx.params.get('z') * ax_dist['z'])
+        depth_fit = space.params.get('x') - (bx.params.get('x') * ax_dist['x'])
+        height_fit = space.params.get('y') - (bx.params.get('y') * ax_dist['y'])
+        length_fit = space.params.get('z') - (bx.params.get('z') * ax_dist['z'])
 
-    max_items_in_axis = ax_dist[ax[0]] * ax_dist[ax[1]]
+        max_items_in_axis = ax_dist[ax[0]] * ax_dist[ax[1]]
 
-    fit = depth_fit + height_fit + length_fit \
-        if min([depth_fit, height_fit, length_fit]) >= 0 and max_items_in_axis > 0 else 1e9
+        fit = depth_fit + height_fit + length_fit \
+            if min([depth_fit, height_fit, length_fit]) >= 0 and max_items_in_axis > 0 else 1e9
 
-
-    return {
+        rotation_fits.append({
             'max_items': max_items_in_axis,
             'fit': fit,
-            'ax_dist': ax_dist
-    }
+            'ax_dist': ax_dist,
+            'rotation': bx.cur_rot
+    })
+
+
+
+    return rotation_fits
 
 
 # TODO: Esta función está horrible

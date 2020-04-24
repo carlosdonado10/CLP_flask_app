@@ -41,8 +41,8 @@ def index():
                                 "post_body": post.body,
                                 "post_timestamp": post.timestamp,
                                 "dispatch_name": dispatch.name,
-                                "dispatch_body": base_url + '/results/' +
-                                                    quote(dispatch.body.replace('$$$', '').replace('[', '/['))})
+                                "dispatch_body": url_for('results') + '/' + quote(dispatch.body.replace('$$$', '').replace('[', '/['))
+                                })
             print(post_params[-1]['dispatch_body'])
         else:
             post_params.append({"user_id": user.id,
@@ -175,6 +175,8 @@ def boxes(containerX, containerY, containerZ):
 
         containerParams = dumps(containerParams)
         boxesParams = dumps(boxesParams)
+        # flash(containerParams)
+        # flash(boxesParams)
         return redirect(url_for('results', container_params=containerParams, boxes_params=boxesParams))
 
     elif request.method == 'POST' and request.form.get('updateContainer') is not None:
@@ -199,7 +201,7 @@ def results(container_params, boxes_params):
     allocated_list, utilization, container, allocated_json = volume_maximization(problem_params=loads(boxes_params),
                                                                                  container_params=loads(
                                                                                      container_params))
-
+    # flash(allocated_json)
     total_boxes = 400
     # max_iter = max(allocated_list, key=lambda x: x.iteration).iteration
     max_iter = 3

@@ -73,6 +73,7 @@
     <script type="text/javascript" src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script>
 
+        var boxes_params = JSON.parse({{boxes_params|tojson}})
         var boxes = JSON.parse({{allocated_list_json|tojson}});
         var three_cubes = [];
         var container = JSON.parse({{container|tojson}});
@@ -129,35 +130,40 @@
                 }
             }
 
-            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
+
+            //TODO: For each to capture all boxes
+            Object.keys(boxes_by_type).forEach(function(i){
                 let contribution = (boxes_by_type[i]*boxes[i].volume)/container.volume;
                 optionHTML += '<tr>';
                 optionHTML += '<td>' + i + '</td>';
                 optionHTML += '<td id="coloredtd' + i +'"></td>';
                 optionHTML += '<td> <label>' + boxes_by_type[i] + '</label></td>';
-                optionHTML += '<td><label>' + 100*boxes_by_type[i]*sample_boxes[i].volume/container.volume + '%</label></td></tr>';
-            }
+                optionHTML += '<td><label>' + 100 * boxes_by_type[i] * sample_boxes[i].volume / container.volume + '%</label></td></tr>';
+
+            });
+
             res_table.innerHTML = optionHTML;
 
-            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
-                document.getElementById("coloredtd" + i).style.backgroundColor=colors_str[i].replace("0x", '#');
-            }
+            Object.keys(boxes_by_type).forEach(function(i){
+                document.getElementById('coloredtd' + i).style.backgroundColor=colors_str[i].replace('0x','#');
+            });
+
 
             optionHTML = container_table.innerHTML;
-            optionHTML += '<tr><td>' + container.x + '</td>'
-            optionHTML += '<td>' + container.y + '</td>'
-            optionHTML += '<td>' + container.z + '</td>'
-            optionHTML += '<td>' + container.z + '</td></tr>'
+            optionHTML += '<tr><td>' + container.x + '</td>';
+            optionHTML += '<td>' + container.y + '</td>';
+            optionHTML += '<td>' + container.z + '</td>';
+            optionHTML += '<td>' + container.z + '</td></tr>';
 
             container_table.innerHTML = optionHTML;
 
             optionHTML = boxes_table.innerHTML;
-            for(let i=0; i<Object.keys(boxes_by_type).length; i++){
-                optionHTML += '<tr><td>' + sample_boxes[i].x + '</td>'
-                optionHTML += '<td>' + sample_boxes[i].y + '</td>'
-                optionHTML += '<td>' + sample_boxes[i].z + '</td>'
-                optionHTML += '<td>' + sample_boxes[i].volume + '</td></tr>'
-            }
+            Object.keys(boxes_by_type).forEach(function(i){
+                    optionHTML += '<tr><td>' + sample_boxes[i].x + '</td>';
+                    optionHTML += '<td>' + sample_boxes[i].y + '</td>';
+                    optionHTML += '<td>' + sample_boxes[i].z + '</td>';
+                    optionHTML += '<td>' + sample_boxes[i].volume + '</td></tr>';
+            });
 
             boxes_table.innerHTML=optionHTML;
         }
@@ -165,7 +171,7 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color( 0xffffff );
+            scene.background = new THREE.Color( 0xFFFFFF );
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth*0.6, window.innerHeight*0.6);
